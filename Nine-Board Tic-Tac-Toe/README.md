@@ -8,7 +8,7 @@ Our program combines Alpha-Beta pruning with logic, object-oriented programming,
 an artificially intelligent agent which can defeat other agents with above-average to good intelligence. 
 Several classes along with data structures like 2D arrays and lists have been used to store the current board and game state information.
 
- _____________________________________________________________________IMPLEMENTATION:_______________________________________________________________________
+ _____________________________________________________________________IMPLEMENTATION:____________________________________________________________________
 
    The algorithm begins by evaluating the state of the current board. For every turn of the agent, 
    a copy of the original board is made, and the best move is found by calculating efficiency of each legally allowed play on that board. 
@@ -20,7 +20,7 @@ Several classes along with data structures like 2D arrays and lists have been us
 
    This is repeated till the opponent wins or a move by the agent on the current board forms a winning combination, leading to the agent winning.
 
-_____________________________________________________________________SCORE CALCULATON:______________________________________________________________________
+_____________________________________________________________________SCORE CALCULATON:____________________________________________________________________
 
    We calculate the score of each board by weighing the number of marks placed by the agent and the number of marks placed by the opponent against 
    the 8 possible tic-tac-toe winning combinations. 
