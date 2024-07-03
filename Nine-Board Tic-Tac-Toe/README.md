@@ -19,7 +19,7 @@ Several classes along with data structures like 2D arrays and lists have been us
 
    This is repeated till the opponent wins or a move by the agent on the current board forms a winning combination, leading to the agent winning.
 
-____________________________________________________________________SCORE CALCULATON:______________________________________________________________________
+_____________________________________________________________________SCORE CALCULATON:______________________________________________________________________
 
    We calculate the score of each board by weighing the number of marks placed by the agent and the number of marks placed by the opponent against 
    the 8 possible tic-tac-toe winning combinations. 
