@@ -2,8 +2,9 @@ In this assignment you will be writing an agent to play the game of Nine-Board T
 
 The game is won by getting three-in-a row either horizontally, vertically or diagonally in one of the nine boards. If a player is unable to make their move (because the relevant board is already full) the game ends in a draw.
 
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
- Our program combines Alpha-Beta pruning with logic, object-oriented programming, and data structure functionality to create 
+Our program combines Alpha-Beta pruning with logic, object-oriented programming, and data structure functionality to create 
 an artificially intelligent agent which can defeat other agents with above-average to good intelligence. 
 Several classes along with data structures like 2D arrays and lists have been used to store the current board and game state information.
 
