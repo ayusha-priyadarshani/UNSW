@@ -1,3 +1,4 @@
+## Problem
 This project is based on a popular puzzle, variously known as "Hashiwokakero", "Hashi" or "Bridges". You will need to write a program to solve this puzzle, and provide a brief description of the algorithm and data structures you have used. The input to your program will be a rectangular array of numbers and dots, for example:
 
 ![image](https://github.com/m1omomama/UNSW/assets/110977889/603fd91a-29f1-43cf-8db5-7feede7db413)
@@ -11,3 +12,6 @@ Each number represents an "island", while the dots represent the empty space (wa
 4. the total number of bridges connected to each island must be equal to the number on the island
 
 ![image](https://github.com/m1omomama/UNSW/assets/110977889/6f612c45-9381-4785-bd3e-23da0bcd06d8)
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+## Solution
