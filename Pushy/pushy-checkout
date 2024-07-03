@@ -1,0 +1,97 @@
+#!/bin/dash
+
+############################################################################################################
+#
+#                                       ASSIGNMENT 1 - COMP2041
+#                                            pushy-checkout
+#
+#                                       by  Ayusha Priyadarshani
+#                                               z5452643
+#
+#                                              25-03-2024
+#                    
+############################################################################################################
+
+#Check if a commit has been made
+#( Logbook will get created after first commit )
+if test -f ".pushy/logbook"
+then
+    continue
+else
+    echo "pushy-checkout: error: this command can not be run until after the first commit"
+    exit
+fi
+
+br_name="$1"
+
+#Remove files which do not belong in the branch
+ls -A | grep -v "pushy" | grep -v "test" |
+while IFS= read -r file
+do
+    if test -f ".pushy/$br_name/$file"
+    then    
+        continue
+    else 
+        if test -f ".pushy/master/$file"
+        then
+            continue
+        else
+            rm $file
+        fi
+    fi
+done
+
+#If no arguments are provided, display error
+if [ "$#" -eq 0 ]
+then
+    echo "usage: pushy-checkout <branch>"
+else
+    if [ "$br_name" = "master" ]
+    then 
+        if test -f ".pushy/curr_branch"
+        then
+            rm ".pushy/curr_branch"
+        fi
+        echo "Switched to branch 'master'"
+        if test -d ".pushy/reference"
+        then
+            rm -rf ".pushy/reference"
+        fi
+        mkdir ".pushy/reference"
+        ls -A | grep -v "pushy" | grep -v "test" |
+        while IFS= read -r file
+        do
+            cp "$file" ".pushy/reference/"
+        done
+        exit
+    fi
+    if test -d ".pushy/$br_name"
+    then
+        touch ".pushy/curr_branch"
+        echo $br_name >".pushy/curr_branch"
+        echo "Switched to branch '"$br_name"'"
+        if test -d ".pushy/reference"
+        then
+            rm -rf ".pushy/reference"
+        fi
+        mkdir ".pushy/reference"
+        ls -A ".pushy/$br_name" | grep -v "pushy" | grep -v "test" |
+        while IFS= read -r file
+        do
+            cp ".pushy/$br_name/$file" ".pushy/reference/"
+            
+        done
+    else 
+        echo "pushy-checkout: error: unknown branch '"$br_name"'"
+        exit
+    fi
+fi
+
+ls -A ".pushy/reference" |
+while IFS= read -r file
+do
+    cp ".pushy/reference/$file" "$file"
+done
+
+
+

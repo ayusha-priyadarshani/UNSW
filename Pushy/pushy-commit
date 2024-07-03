@@ -1,0 +1,186 @@
+#!/bin/dash
+
+############################################################################################################
+#
+#                                       ASSIGNMENT 1 - COMP2041
+#                                             pushy-commit
+#
+#                                       by  Ayusha Priyadarshani
+#                                               z5452643
+#
+#                                              21-03-2024
+#                    
+############################################################################################################
+
+#Check if .pushy repository exists
+if test -d ".pushy"
+then
+    continue
+else 
+    echo "pushy-commit: error: pushy repository directory .pushy not found"
+    exit
+fi
+
+#Check syntax 
+if [ $# -ge 2 ] 2>/dev/null
+then 
+    continue
+else 
+    echo "usage: pushy-commit [-a] -m commit-message"
+    exit
+fi
+
+#If first argument is -m, continue
+if [ "$1" = "-m" ] 
+then 
+    continue
+#If first argument is -a
+elif [ "$1" = "-a" ] 
+then 
+    #Make a list of all files in index
+    data=$(ls -A ".pushy/index")
+    for file in $data
+    do
+        #If files exist in working directory
+        #update index version with directory version
+        #(if files are same net changes will be zero)
+        if test -f "$file"
+        then
+            pushy-add $file
+        fi
+    done
+else 
+    #If -m or -a missing
+    #display error message and exit
+    echo "usage: pushy-commit [-a] -m commit-message"
+    exit
+fi
+
+#Check if index exists
+if test -d ".pushy/index"
+then
+    continue
+else 
+    echo "nothing to commit"
+    exit
+fi
+
+#Find new commit number
+check=0
+commit_num=0
+
+while [ $check -eq 0 ]
+do        
+        if test -d ".pushy/commit.$commit_num"
+        then
+            commit_num=$((commit_num + 1))
+        
+        else
+            commit_name="commit.$commit_num"
+            check=1
+        fi
+done
+
+cd .pushy
+change=False
+prev_commit=$((commit_num-1))
+#At least one or more commits have been made
+if [ $prev_commit -ge 0 ]
+then
+    #Check if number of contents in index 
+    #is equal to number of contents in previous content
+    if [ $(ls -A index | wc -l) -eq $(ls -A "commit.$prev_commit" | wc -l) ]
+    then
+        #For all files in index
+        files=$(ls -A index )
+        for ip in $files
+        do  
+            #If files exist in the latest commit version
+            if test -f "commit.$prev_commit/$ip"
+            then 
+                #Check if the index version of the file is
+                #similar to that in the last commit
+                diff -q "index/$ip" "commit.$prev_commit/$ip" >/dev/null 2>&1
+                if [ $? -eq 2 ] | [ $? -eq 0 ]
+                then 
+                    #If files are the same
+                    #no change 
+                    continue
+                else 
+                    change=True
+                fi
+            else
+                #Files do not exist in previous commit
+                change=True
+            fi
+        done
+    else
+        #If number of contents is different
+        #some changes have been made
+        change=True
+    fi
+else
+    #This is the first commit
+    #Need to add all files in index
+    change=True
+fi
+
+
+if [ "$change" = "False" ]
+then
+    echo "nothing to commit"
+else
+    #If changes have been made
+    #need to commit
+    
+    #Make new directory
+    mkdir $commit_name
+
+    count=0
+
+    #For all permissable files in index
+    ls -A "index/"|
+    grep -E ^[^.] | 
+    while IFS= read -r file
+    do
+        #If first iteration in loop
+        #leave .pushy directory
+        if [ $count -eq 0 ]
+        then
+            cd ../
+            count=$((count+1))
+        fi
+
+        #Copy file contents from index to new commit directory
+        cp ".pushy/index/$file" ".pushy/$commit_name/"
+        
+        #Update status
+        sed -i -e "s/$file - .*/$file - same as repo/g" ".pushy/status"
+        
+    done
+
+    echo "Committed as commit $commit_num"
+
+    #Check if logbook exists
+    if test -f "logbook"
+    then
+        continue
+    else 
+        #Else create logbook
+        touch logbook
+    fi
+
+    #Update logbook
+    msg=$(echo $@ | cut -d' ' -f2-)
+    echo "$commit_num $msg" >> logbook
+    
+fi
+
+#If index is empty
+#clear status
+index_count=$(ls -A "index" | wc -l)
+if [ "$index_count" = 0 ]
+then 
+    echo >status
+fi
+

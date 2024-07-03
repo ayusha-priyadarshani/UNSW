@@ -1,0 +1,64 @@
+#!/bin/dash
+
+############################################################################################################
+#
+#                                       ASSIGNMENT 1 - COMP2041
+#                                             pushy-branch
+#
+#                                       by  Ayusha Priyadarshani
+#                                               z5452643
+#
+#                                              24-03-2024
+#                    
+############################################################################################################
+
+#Check if a commit has been made
+#( Logbook will get created after first commit )
+if test -f ".pushy/logbook"
+then
+    continue
+else
+    echo "pushy-branch: error: this command can not be run until after the first commit"
+    exit
+fi
+
+#If no arguments are provided, display branch list
+if [ "$#" -eq 0 ]
+then
+    cat .pushy/branches | sort | uniq | grep -v '^[[:space:]]*$'  
+#If argument = "master"
+elif [ "$1" = "master" ]
+then
+    echo "pushy-branch: error: branch 'master' already exists"
+#If argument 1 is "-d" 
+elif [ "$1" = "-d" ]
+then
+    #If argument 2 = "master" then display error
+    if [ "$2" = "master" ]
+    then
+        echo "pushy-branch: error: can not delete branch 'master': default branch"
+    else
+        #Else if the branch name is valid, remove branch
+        if test -d ".pushy/$2"
+        then
+            rmdir ".pushy/$2"
+            echo "Deleted branch '"$2"'"
+            sed -i -e "s/$2.*//g" .pushy/branches
+        else
+            echo "pushy-branch: error: branch '"$2"' doesn't exist"
+        fi
+    fi
+else
+    #For all other arguments, 
+    #make the branch and update branches file
+    if test -f .pushy/branches
+    then
+        mkdir .pushy/$1
+        echo $1 >>.pushy/branches
+    else
+        touch .pushy/branches
+        echo master >.pushy/branches
+        mkdir .pushy/$1
+        echo $1 >>.pushy/branches
+    fi
+fi

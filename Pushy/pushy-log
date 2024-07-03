@@ -1,0 +1,26 @@
+#!/bin/dash
+
+############################################################################################################
+#
+#                                       ASSIGNMENT 1 - COMP2041
+#                                              pushy-log
+#
+#                                         Ayusha Priyadarshani
+#                                               z5452643
+#
+############################################################################################################
+
+
+if test -d ".pushy"
+then
+    continue
+else 
+    echo "pushy-commit: error: pushy repository directory .pushy not found"
+    exit
+fi
+
+if test -f ".pushy/logbook"
+then
+    cat .pushy/logbook | sort -nr 
+fi
+    

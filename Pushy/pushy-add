@@ -1,0 +1,94 @@
+#!/bin/dash
+
+############################################################################################################
+#
+#                                       ASSIGNMENT 1 - COMP2041
+#                                              pushy-add
+#
+#                                       by  Ayusha Priyadarshani
+#                                               z5452643
+#
+#                                              21-03-2024
+#                    
+############################################################################################################
+
+#Initialise temporary variable
+exists=0
+
+#Check if .pushy repository exists
+if test -d ".pushy"
+then
+    continue
+else 
+    echo "pushy-add: error: pushy repository directory .pushy not found"
+    exit
+fi
+
+#Check if arguments have been provided
+if [ "$#" -gt 0 ]
+then
+    continue
+else
+    echo "usage: pushy-add <filenames>"
+    exit
+fi
+
+for arg in "$@"
+do
+    #Check if argument provided exists in working directory
+    if test -f $arg
+    then 
+        #Check if index exists
+        if test -d ".pushy/index"
+        then 
+            exists=1
+        else 
+            #If index not found, create index directory
+            mkdir ".pushy/index"
+        fi
+
+        #If a branch other than master has been specified
+        if test -f ".pushy/curr_branch"
+        then 
+            br_name=$(cat ".pushy/curr_branch")
+            cp "$arg" ".pushy/$br_name/$arg" 
+            cp "$arg" ".pushy/index/$arg" 
+            #rm "$arg"
+        #Copy file contents from working directory to index
+        else
+            cp "$arg" ".pushy/index/$arg" 
+            cp "$arg" ".pushy/master/$arg" 
+        fi
+        
+        #Update status
+        if test -f ".pushy/status"
+        then 
+            #If status file exists
+            #clear previous status and update current status
+            sed -i -e "s/$arg - .*//g" ".pushy/status"
+            echo "$arg - added to index" >> ".pushy/status"
+        else 
+            #If status file does not exist
+            #create new file and update status
+            touch ".pushy/status"
+            sed -i -e "s/$arg - .*//g" ".pushy/status"
+            echo "$arg - added to index" >> ".pushy/status"
+        fi
+    else
+        #File not present in working directory
+        #Check if argument provided exists in index
+        if test -f ".pushy/index/$arg"
+        then
+            #If file exists in index, update removal 
+            #by removing from index
+            rm ".pushy/index/$arg"
+        else
+            #If file does not exist in index as well
+            #display error
+            echo "pushy-add: error: can not open '"$arg"'"
+            exit
+        fi
+    fi
+done
+
+

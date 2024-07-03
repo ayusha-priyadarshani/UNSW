@@ -1,0 +1,36 @@
+#!/bin/dash
+
+############################################################################################################
+#
+#                                       ASSIGNMENT 1 - COMP2041
+#                                              pushy-init
+#
+#                                       by  Ayusha Priyadarshani
+#                                               z5452643
+#
+#                                              21-03-2024
+#                    
+############################################################################################################
+
+#Check if any arguments have been provided
+if [ $# -gt 0 ]
+then
+    echo "usage: pushy-init"
+fi
+
+#Check if .pushy already exists
+if test -d ".pushy"
+then
+    echo "pushy-init: error: .pushy already exists"
+else 
+    echo "Initialized empty pushy repository in .pushy"
+    mkdir ".pushy"
+fi
+
+#Make an initial directory for branching
+if test -d ".pushy/master"
+then
+    continue
+else
+    mkdir ".pushy/master"
+fi

@@ -1,0 +1,55 @@
+#!/bin/dash
+
+############################################################################################################
+#
+#                                       ASSIGNMENT 1 - COMP2041
+#                                             pushy-branch
+#
+#                                       by  Ayusha Priyadarshani
+#                                               z5452643
+#
+#                                              23-03-2024
+#                    
+############################################################################################################
+
+#Check syntax
+if [ "$#" -le 0 ]
+then
+    echo "usage: pushy-show <commit>:<filename>"
+    exit
+fi
+
+#Segregate commit number and file name from argument
+commit_num=$(echo $1 | cut -d':' -f1)
+file=$(echo $1 | cut -d':' -f2)
+
+#If commit num is given
+if [ $commit_num -ge 0 ] 2>/dev/null
+then
+    #Find if commit exists
+    if test -d ".pushy/commit.$commit_num"
+    then
+        cd ".pushy/commit.$commit_num"
+
+        #If file exists, display contents
+        #else display error
+        if test -f "$file"
+        then
+            cat $file
+        else 
+            echo "pushy-show: error: '"$file"' not found in commit $commit_num"
+        fi
+    else
+        echo "pushy-show: error: unknown commit '"$commit_num"'"
+    fi
+else
+    #Commit number is not given
+    #Find if file exists in index and display contents
+    #else display error
+    if test -f ".pushy/index/$file"
+    then
+        cat ".pushy/index/$file"
+    else 
+        echo "pushy-show: error: '"$file"' not found in index"
+    fi
+fi

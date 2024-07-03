@@ -1,0 +1,187 @@
+#!/bin/dash
+
+############################################################################################################
+#
+#                                       ASSIGNMENT 1 - COMP2041
+#                                             pushy-status
+#
+#                                       by  Ayusha Priyadarshani
+#                                               z5452643
+#
+#                                              23-03-2024
+#                    
+############################################################################################################
+
+#Find new commit number
+check=0
+commit_num=0
+
+while [ $check -eq 0 ]
+do        
+        if test -d ".pushy/commit.$commit_num"
+        then
+            commit_num=$((commit_num + 1))
+        
+        else
+            commit_name="commit.$commit_num"
+            check=1
+        fi
+done
+
+#For all files in working directory
+#excluding shell scripts
+files=$(ls -A | grep -v "pushy")
+for arg in $files
+do 
+    prev_commit=$((commit_num-1))
+    count=0
+    #If 2 or more commits exist
+    while [ $prev_commit -gt 0 ]
+    do
+        #If file in last commit
+        if test -f ".pushy/commit.$prev_num/$arg"
+        then 
+            continue
+        else 
+            #File not in commit
+            count=$((count+1))
+        fi
+        #Move to an earlier commit
+        prev_commit=$((prev_commit-1))
+    done
+
+    #For commit 0 (first commit)
+    if [ $prev_commit -eq 0 ]
+    then
+        #If file is in index
+        if test -f ".pushy/index/$arg"
+        then
+            continue
+        else
+            #If file is in commit 0
+            if test -f ".pushy/commit.0/$arg"
+            then 
+                #Compare files in commit 0 and working directory
+                diff -q ".pushy/commit.0/$arg" "$arg" >/dev/null 2>&1
+                if [ "$?" -eq 0 ]
+                then 
+                    #Same files
+                    continue
+                else
+                    #Check status
+                    status=$(sed -nE "s/$arg - (.*)/\1/p" ".pushy/status")
+                    if [ "$status" = "deleted from index" ]
+                    then 
+                        continue
+                    else
+                        count=$((count+1))
+                    fi
+                fi
+            else 
+                count=$((count+1))
+            fi
+        fi
+    fi
+
+    #If file not found in any commits and number of commits is not 0
+    if [ "$commit_num" = "$count" ] && [ "$commit_num" != 0 ]
+    then
+        #File is untracked by .pushy
+        #Update status
+        sed -i -e "s/$arg - .*/$arg - untracked/g" ".pushy/status"
+        echo "$arg - untracked" >> ".pushy/status"
+    fi  
+done
+
+#For all file names in status
+files=$(cat ".pushy/status"| cut -d'-' -f1)
+for arg in $files
+do  
+    present_in_index=False
+    present_in_dir=False
+    #Check if present in index
+    if test -f ".pushy/index/$arg"
+    then 
+        present_in_index=True
+    else
+        present_in_index=False
+    fi
+
+    #Check if present in working directory
+    if test -f "$arg"
+    then
+        present_in_dir=True
+    else
+        present_in_dir=False
+    fi
+    
+    commit_dir_diff=False
+    commit_index_diff=False
+    prev_commit=$((commit_num-1))
+    #Check if present in last commit
+    if test -f ".pushy/commit.$prev_commit/$arg"
+    then
+        #Compare findex file and last commit file content
+        diff -q ".pushy/index/$arg" ".pushy/commit.$prev_commit/$arg" >/dev/null 2>&1 
+        if [ "$?" -eq 0 ]
+        then 
+            commit_index_diff=False
+        else 
+            commit_index_diff=True
+        fi
+
+        #Compare last commit and working directory file content
+        diff -q "$arg" ".pushy/commit.$prev_commit/$arg" >/dev/null 2>&1 
+        if [ "$?" -eq 0 ]
+        then 
+            commit_dir_diff=False
+        else 
+            commit_dir_diff=True
+        fi
+    fi
+
+    #Check and update error status according to change in file contents
+    if [ "$present_in_index" = "True" ] && [ "$present_in_dir" = "False" ]
+    then
+        status=$(sed -nE "s/$arg - (.*)/\1/p" ".pushy/status")
+        if [ "$status" = "added to index" ]
+        then 
+            sed -i -e "s/$arg - .*//g" ".pushy/status"
+            echo "$arg - added to index, file deleted" >> ".pushy/status"
+        else
+            sed -i -e "s/$arg - .*//g" ".pushy/status"
+            echo "$arg - file deleted" >> ".pushy/status"
+        fi
+        
+    elif [ "$present_in_index" = "True" ] && [ "$present_in_dir" = "True" ]
+    then    
+        diff -q ".pushy/index/$arg" "$arg" >/dev/null 2>&1
+        if [ "$?" = 0 ]
+        then 
+            if [ "$commit_dir_diff" = "True" ]
+            then 
+                sed -i -e "s/$arg - .*//g" ".pushy/status"
+                echo "$arg - file changed, changes staged for commit" >> ".pushy/status"
+            fi
+        else 
+            if [ "$commit_index_diff" = "True" ]
+            then 
+                sed -i -e "s/$arg - .*//g" ".pushy/status"
+                echo "$arg - file changed, different changes staged for commit" >> ".pushy/status"
+            else
+                status=$(sed -nE "s/$arg - (.*)/\1/p" ".pushy/status")
+                if [ "$status" = "added to index" ]
+                then 
+                    sed -i -e "s/$arg - .*//g" ".pushy/status"
+                    echo "$arg - added to index, file changed" >> ".pushy/status"
+                else
+                    sed -i -e "s/$arg - .*//g" ".pushy/status"
+                    echo "$arg - file changed, changes not staged for commit" >> ".pushy/status"
+                fi
+            fi
+        fi
+    fi
+done
+
+#Sort and display status file, removing blank lines
+cat .pushy/status | sort | uniq | grep -v '^[[:space:]]*$'  

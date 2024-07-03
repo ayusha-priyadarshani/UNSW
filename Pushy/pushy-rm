@@ -1,0 +1,275 @@
+#!/bin/dash
+
+############################################################################################################
+#
+#                                       ASSIGNMENT 1 - COMP2041
+#                                               pushy-rm
+#
+#                                       by  Ayusha Priyadarshani
+#                                               z5452643
+#
+#                                              22-03-2024
+#                    
+############################################################################################################
+
+#Check if number of arguments is correct
+
+if [ "$#" -eq 0 ]
+then
+    echo "usage: pushy-rm [--force] [--cached] <filenames>"
+fi
+
+#Check if first argument is force
+
+if [ "$1" = "--force" ]
+then 
+    #Check if second arg is cached
+    if [ "$2" = "--cached" ]
+    then
+        #Remove file from index and change status
+        rm ".pushy/index/$3" 
+        sed -i -e "s/$3 - .*/$3 - deleted from index/g" ".pushy/status"
+        
+    else
+        for arg in "$@"
+        do
+            #If argument is equal to "force", ignore
+            if [ "$arg" = "--force" ]
+            then
+                continue
+            else
+                #Else, check if argument is in index
+                if test -f ".pushy/index/$arg"
+                then
+                    #Find commit number for next commit
+                    check=0
+                    commit_num=0
+
+                    while [ $check -eq 0 ]
+                    do        
+                            if test -d ".pushy/commit.$commit_num"
+                            then
+                                commit_num=$((commit_num + 1))
+                            
+                            else
+                                commit_name="commit.$commit_num"
+                                check=1
+                            fi
+                    done
+
+                    present=False
+                    #Latest commit number
+                    prev_commit=$((commit_num-1))
+
+                    #If at least 1 or more commits exist
+                    if [ $prev_commit -ge 0 ]
+                    then
+                        #Check if file is in the latest commit
+                        if test -f ".pushy/commit.$prev_commit/$arg"
+                        then 
+                            #Check if file in index is the same as the file in latest commit
+                            diff -q ".pushy/index/$arg" ".pushy/commit.$prev_commit/$arg" >/dev/null 2>&1
+                            if [ $? -eq 2 ] | [ $? -eq 0 ]
+                            then 
+                                #If content of both files is the same
+                                #set file present (in commit) to true
+                                present=True
+                            else 
+                                #If content is different
+                                #set not present in commit
+                                present=False
+                            fi
+                        else
+                            #If file is not present in latest commit
+                            #set not present in commit
+                            present=False
+                        fi
+                        
+                    else
+                        #If no previous commits exist
+                        #set present in repository to false
+                        present=False
+                    fi
+
+                    
+                    if [ "$present" = "True" ]
+                    then 
+                        #If file forcefully removed but present in repository
+                        sed -i -e "s/$arg - .*/$arg - file deleted, deleted from index/g" ".pushy/status"
+                        rm ".pushy/index/$arg" 
+                        rm "$arg"
+                    else
+                        #If file forcefully removed but not present in repository
+                        #remove from status
+                        sed -i -e "s/$arg - .*//g" ".pushy/status"
+                        rm ".pushy/index/$arg" 
+                        rm "$arg"
+                    fi
+                else
+                    #File not present in index
+                    echo "pushy-rm: error: '"$arg"' is not in the pushy repository"
+                fi
+            fi
+        done
+    fi
+else
+    #For all arguments 
+    for arg in "$@"
+    do
+        #Check if argument is present in working directory
+        if test -f $arg
+        then
+            #Check if file is in index
+            if test -f ".pushy/index/$arg"
+            then
+                #Check if argument 1 is "--cached"
+                if [ "$1" = "--cached" ]
+                then
+                    #Compare index file and working directory file 
+                    diff -q ".pushy/index/$arg" "$arg" >/dev/null 2>&1
+                    if [ $? -eq 2 ] | [ $? -eq 0 ]
+                    then
+                        index_change=False
+                    else 
+                        index_change=True
+                    fi
+
+                    check=0
+                    commit_num=0
+                    #Get new commit number
+                    while [ $check -eq 0 ]
+                    do        
+                            if test -d ".pushy/commit.$commit_num"
+                            then
+                                commit_num=$((commit_num + 1))
+                            
+                            else
+                                commit_name="commit.$commit_num"
+                                check=1
+                            fi
+                    done
+                    
+                    change=False
+                    prev_commit=$((commit_num-1))
+
+                    #If 1 or more commits exist
+                    if [ $prev_commit -ge 0 ]
+                    then
+                        #If file is in latest commit
+                        if test -f ".pushy/commit.$prev_commit/$arg"
+                        then 
+                            #Compare index file and commit file
+                            diff -q ".pushy/index/$arg" ".pushy/commit.$prev_commit/$arg" >/dev/null 2>&1
+                            if [ $? -eq 2 ] | [ $? -eq 0 ]
+                            then 
+                                change=False
+                            else 
+                                change=True
+                            fi
+                        else
+                            change=True
+                        fi
+                        
+                    else
+                        change=True
+                    fi
+
+                    #If commit-index change true and index-working dir change true
+                    if [ "$change" = "True" ] && [ "$index_change" = "True" ]
+                    then
+                        #display error
+                        echo "pushy-rm: error: '"$arg"' in index is different to both the working file and the repository"
+                    else
+                        #remove index version
+                        rm ".pushy/index/$arg"
+                        sed -i -e "s/$arg - .*/$arg - deleted from index/g" ".pushy/status"
+                    
+                    fi
+                else
+                    #Find last commit num
+                    check=0
+                    commit_num=0
+
+                    while [ $check -eq 0 ]
+                    do        
+                            if test -d ".pushy/commit.$commit_num"
+                            then
+                                commit_num=$((commit_num + 1))
+                            
+                            else
+                                commit_name="commit.$commit_num"
+                                check=1
+                            fi
+                    done
+                    
+                    commit_change=False
+                    prev_commit=$((commit_num-1))
+                    #If 1 or more commits exist
+                    if [ $prev_commit -ge 0 ]
+                    then
+                        #Check if file exists in latest commit
+                        if test -f ".pushy/commit.$prev_commit/$arg"
+                        then 
+                            #Compare index file and last commit file
+                            diff -q ".pushy/index/$arg" ".pushy/commit.$prev_commit/$arg" >/dev/null 2>&1
+                            if [ $? -eq 2 ] | [ $? -eq 0 ]
+                            then 
+                                commit_change=False
+                            else 
+                                commit_change=True
+                            fi
+                        else
+                            commit_change=True
+                        fi
+                        
+                    else
+                        commit_change=True
+                    fi
+
+                    #Compare index file and working directory file
+                    diff -q ".pushy/index/$arg" "$arg" >/dev/null 2>&1
+                    if [ $? -eq 2 ] | [ $? -eq 0 ]
+                    then
+                        index_change=False
+                    else 
+                        index_change=True
+                    fi
+
+                    #Index-commit difference
+                    if [ $commit_change = "True" ] 
+                    then
+                        #Index-working dir difference
+                        if [ $index_change = "False" ]
+                        then
+                            echo "pushy-rm: error: '"$arg"' has staged changes in the index"
+                        else
+                            echo "pushy-rm: error: '"$arg"' in index is different to both the working file and the repository"
+                        fi
+                    #Only index-working dir difference
+                    elif [ $index_change = "True" ]
+                    then
+                        echo  "pushy-rm: error: '"$arg"' in the repository is different to the working file"
+                    else
+                        #Index-working file same
+                        rm ".pushy/index/$arg"
+                        rm "$arg"
+                        sed -i -e "s/$arg - .*/$arg - file deleted, deleted from index/g" ".pushy/status"
+                    fi
+                    
+                    
+                fi
+            else
+                #File not in index
+                echo "pushy-rm: error: '"$arg"' is not in the pushy repository"
+            fi
+        else 
+            if [ "$arg" = "--cached" ]
+            then
+                continue
+            else
+                #File not in working directory
+                echo "pushy-rm: error: '"$arg"' is not in the pushy repository"
+            fi
+        fi
+    done
+fi
