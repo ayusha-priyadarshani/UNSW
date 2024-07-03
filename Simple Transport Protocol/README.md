@@ -3,6 +3,7 @@ For this assignment, we were required to implement a Simple Transport Protocol (
 
 ## Construction and Program Design
 Language: Python
+
 I started off by building STP Packet, sender and receiver classes. I built a main function, stored command-line arguments in variables, initialised other variables, and passed them to their respective classes (if any) to confirm proper functioning. 
 
 After the classes were established, I added basic features required for STP transfer of a small file, such as state variables and functions like stp_rcv, make_SYN, make_ACK, send, add_data, update_log. To test whether the functions written were performing according to the guideline, I built a basic Two-Way handshake code along with a basic file transfer snippet. 
