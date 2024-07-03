@@ -1,1 +1,1 @@
-Repository containing rojects completed during my time @ UNSW
+Repository containing projects completed during my time @ UNSW
