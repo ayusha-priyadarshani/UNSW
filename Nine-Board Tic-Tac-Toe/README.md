@@ -38,6 +38,6 @@ ____________________________________________________________________SCORE CALCUL
    The first X increases the score to 10, while the second one increases it to 100. 
    However, the third place is occupied by the opponent so the first and second marks are nullified since the combo can not be completed.
 
-#   For column 1, the two Xs add on to weigh 100 and are added to the final score.
-#
-#   For row 3, the X and O get cancelled out so the final total score of the board is 100. 
+   For column 1, the two Xs add on to weigh 100 and are added to the final score.
+
+   For row 3, the X and O get cancelled out so the final total score of the board is 100. 
